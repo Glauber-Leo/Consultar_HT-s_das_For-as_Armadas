@@ -610,9 +610,22 @@
           limites.push([lat, lon]);
 
           const marcador = L.marker([lat, lon], { icon: iconeHotel })
-            .bindPopup(criarConteudoPopup(hotel));
+            .bindPopup(criarConteudoPopup(hotel), {
+              autoPan: true,
+              autoPanPadding: [20, 20]
+            });
           
           marcador._hotelRef = hotel;
+
+          // Evento de clique para centralizar suavemente no marcador e garantir popup visível no smartphone
+          marcador.on('click', function(e) {
+            const coords = e.target.getLatLng();
+            const zoomAtual = map.getZoom();
+            const zoomAlvo = zoomAtual < 13 ? 13 : zoomAtual;
+            map.setView(coords, zoomAlvo, { animate: true });
+            e.target.openPopup();
+          });
+
           marcador.addTo(map);
           state.marcadoresHoteis.push(marcador);
         }
@@ -654,8 +667,17 @@
             <p class="font-bold text-slate-800">${nome || 'Ponto de Referência'}</p>
             <p class="text-slate-500">Raio de busca: ${state.raioKm} km</p>
           </div>
-        `)
-        .addTo(map);
+        `, {
+          autoPan: true,
+          autoPanPadding: [20, 20]
+        });
+
+      state.marcadorCentro.on('click', function(e) {
+        map.panTo(e.target.getLatLng(), { animate: true });
+        e.target.openPopup();
+      });
+
+      state.marcadorCentro.addTo(map);
 
       nomeRefMunicipio.textContent = nome || 'Referência Selecionada';
       coordsRef.textContent = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
