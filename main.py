@@ -2,6 +2,7 @@ import os
 import sqlite3
 import struct
 import math
+import unicodedata
 import urllib.request
 import urllib.parse
 import urllib.error
@@ -9,6 +10,14 @@ from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+
+
+def normalizar_texto(texto: str) -> str:
+    """Remove acentos e converte para minúsculas para buscas tolerantes."""
+    if not texto:
+        return ""
+    decomposed = unicodedata.normalize("NFD", str(texto))
+    return "".join(ch for ch in decomposed if unicodedata.category(ch) != "Mn").lower().strip()
 
 app = FastAPI(title="API Hotéis de Trânsito - Forças Armadas")
 
@@ -193,6 +202,7 @@ def listar_hoteis(
     lon: Optional[float] = Query(None, description="Longitude do ponto de referência"),
     raio_km: Optional[float] = Query(100.0, description="Raio de busca em quilômetros"),
     busca: Optional[str] = Query(None, description="Termo textual para filtro (nome, município, etc.)"),
+    forca: Optional[str] = Query(None, description="Filtro opcional por Força Armada (EXÉRCITO, MARINHA, AERONÁUTICA)"),
 ):
     """
     Retorna a lista de hotéis de trânsito a partir do cache em memória.
@@ -206,13 +216,20 @@ def listar_hoteis(
     todos_hoteis = CACHE_HOTEIS
     resultados = []
 
-    termo_busca = busca.strip().lower() if busca else None
+    termo_busca = normalizar_texto(busca) if busca else None
+    filtro_forca = normalizar_texto(forca) if forca else None
 
     for hotel in todos_hoteis:
-        # Filtro textual genérico (se informado)
+        # Filtro por Força Armada (se informado)
+        if filtro_forca:
+            forca_hotel = normalizar_texto(hotel.get("forca", ""))
+            if filtro_forca not in forca_hotel:
+                continue
+
+        # Filtro textual tolerante a acentos (se informado)
         if termo_busca:
-            conteudo_texto = " ".join(
-                str(v).lower() for v in hotel.values() if v is not None
+            conteudo_texto = normalizar_texto(
+                " ".join(str(v) for v in hotel.values() if v is not None)
             )
             if termo_busca not in conteudo_texto:
                 continue
