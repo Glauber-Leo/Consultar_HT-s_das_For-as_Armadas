@@ -720,13 +720,13 @@
 
       <!-- Controles Flutuantes do Mapa (Direita — confortáveis no polegar no mobile e limpos no PC) -->
       <div class="absolute right-3 bottom-20 md:top-3 md:bottom-auto z-[430] flex flex-col gap-2">
-        <!-- Alternar Camada Base (Mapa Limpo / OSM / Satélite) -->
+        <!-- Alternar Camada Base (OSM / Satélite) -->
         <div class="relative">
           <button
             id="btnCamadasMapa"
             type="button"
             class="touch-btn w-10 h-10 bg-white/95 hover:bg-white text-slate-700 hover:text-slate-900 rounded-xl shadow-lg border border-slate-200/90 flex items-center justify-center transition"
-            title="Mudar estilo do mapa (Limpo, Ruas OSM, Satélite)"
+            title="Mudar estilo do mapa (Ruas OSM ou Satélite)"
             aria-label="Mudar estilo do mapa"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -734,11 +734,8 @@
             </svg>
           </button>
           <div id="menuCamadasMapa" class="hidden absolute right-12 bottom-0 md:bottom-auto md:top-0 bg-white rounded-xl shadow-2xl border border-slate-200 p-1.5 w-40 flex flex-col gap-1 z-[450]">
-            <button type="button" data-basemap="voyager" class="btn-basemap text-left px-2.5 py-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 flex items-center justify-between">
-              <span>Mapa Limpo</span><span>✓</span>
-            </button>
-            <button type="button" data-basemap="osm" class="btn-basemap text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 flex items-center justify-between">
-              <span>Ruas (OSM)</span><span></span>
+            <button type="button" data-basemap="osm" class="btn-basemap text-left px-2.5 py-2 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-800 flex items-center justify-between">
+              <span>Ruas (OSM)</span><span>✓</span>
             </button>
             <button type="button" data-basemap="satelite" class="btn-basemap text-left px-2.5 py-2 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-100 flex items-center justify-between">
               <span>Satélite</span><span></span>
@@ -906,7 +903,7 @@
       marcadoresHoteis: [],
       marcadorCentro: null,
       circuloRaio: null,
-      basemapAtivo: 'voyager'
+      basemapAtivo: 'osm'
     };
 
     // =========================================================================
@@ -1130,11 +1127,6 @@
     L.control.zoom({ position: 'bottomright' }).addTo(map);
 
     const camadasBase = {
-      voyager: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '© <a href="https://openstreetmap.org">OSM</a> © <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: 'abcd',
-        maxZoom: 19
-      }),
       osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
         maxZoom: 19
@@ -1144,7 +1136,7 @@
         maxZoom: 18
       })
     };
-    camadasBase.voyager.addTo(map);
+    camadasBase.osm.addTo(map);
 
     // Agrupamento inteligente de marcadores (resolve sobreposição de 117 HTs em 49 locais!)
     const clusterHoteis = L.markerClusterGroup({
